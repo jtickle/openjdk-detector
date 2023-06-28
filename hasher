@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Find all files named `java` inside a directory named `bin` located anywhere
+# on the system. Separate output with `null` instead of space, so that trees
+# containing spaces or other special characters can be processed.
+# Pipe this null-separated output into a bash `while read` loop, specifying a
+# null delimiter.
+locate -0 '*/bin/java' | while read -d $'\0' java
+do
+	# Find and print md5 hash of the file
+	# Later, we will use the hash for classification and faster identification
+	echo -n $(md5sum $java)
+
+	# Search the binary for the case-insensitive string `openjdk`
+	echo -n " "
+	result=$(strings $java |grep -A 2 -i openjdk)
+	if [ $? -ne 0 ]; then
+		echo "unidentified"
+	else
+		echo $result
+	fi
+done
